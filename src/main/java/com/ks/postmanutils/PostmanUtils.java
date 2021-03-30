@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,11 +23,9 @@ import com.ks.postmanutils.postman.collection.item.ItemHeader;
 import com.ks.postmanutils.postman.collection.item.ItemRequest;
 import com.ks.postmanutils.postman.environment.EnvironmentValue;
 
-import kotlin.Pair;
 import lombok.Getter;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -36,6 +33,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+/**
+ * PostmanUtils class.
+ * A class that has Postman configuration information and performs Postman requests.
+ * 
+ * @author Kyu-Seok Oh
+ */
 public class PostmanUtils {
   private final String postmanCollectionFilePath;
   private final String postmanEnvironmentFilePath;
@@ -46,6 +49,13 @@ public class PostmanUtils {
   
   @Getter private List<OkHttpRequest> requestList;
   
+  /**
+   * Constructor for using PostmanUtils.
+   * 
+   * @param postmanCollectionFilePath Postman Collection File Path.
+   * @param postmanEnvironmentFilePath Postman Environment File Path.
+   * @throws PostmanUtilException Exception occurred during class creation.
+   */
   public PostmanUtils(String postmanCollectionFilePath, String postmanEnvironmentFilePath) throws PostmanUtilException {
     this.postmanCollectionFilePath  = postmanCollectionFilePath;
     this.postmanEnvironmentFilePath = postmanEnvironmentFilePath;
@@ -67,11 +77,11 @@ public class PostmanUtils {
       this.requestList = makeRequestFromCollection(postmanCollection);
       
     } catch (JsonParseException | JsonMappingException e) {
-      throw new PostmanUtilException("JSON 파싱 중 에러 발생", e);
+      throw new PostmanUtilException("Error parsing JSON", e);
     } catch (FileNotFoundException e) {
-      throw new PostmanUtilException("Postman Collection JSON 파일 로딩 중 경로 에러 발생", e);
+      throw new PostmanUtilException("FileNotFound error occurred while loading Postman Collection JSON file", e);
     } catch (IOException e) {
-      throw new PostmanUtilException("테스트 중 IOException 발생", e);
+      throw new PostmanUtilException("IOException occurred during testing", e);
     }
   }
   
@@ -138,6 +148,13 @@ public class PostmanUtils {
     retList.add(OkHttpRequest.builder().request(reqBuilder.build()).build());
   }
   
+  /**
+   * A method that sequentially sends all requests in the request list.</br>
+   * Exceptions that occurred in the middle are added to the list and returned.
+   * 
+   * @param reqList A list of requests made when creating the PostmanUtils class.
+   * @return List of exceptions raised during the request.
+   */
   public List<PostmanUtilException> sendAllRequestIgnoreExcpetions(List<OkHttpRequest> reqList) {
     List<PostmanUtilException> exceptions = new ArrayList<>();
     reqList.forEach(req -> {
@@ -150,12 +167,25 @@ public class PostmanUtils {
     return exceptions;
   }
   
+  /**
+   * A method that sequentially sends all requests in the request list.</br>
+   * If an exception occurs during the request, it stops and throws an exception.
+   * 
+   * @param reqList A list of requests made when creating the PostmanUtils class.
+   * @throws PostmanUtilException An exception raised during the request.
+   */
   public void sendAllRequest(List<OkHttpRequest> reqList) throws PostmanUtilException {
 	for(OkHttpRequest req : reqList) {
 	  sendRequest(req);
 	}
   }
   
+  /**
+   * A method that requests one OkHttpRequest.
+   * 
+   * @param request OkHttpRequest
+   * @throws PostmanUtilException An exception raised during the request.
+   */
   public void sendRequest(OkHttpRequest request) throws PostmanUtilException {
 	try {
 	  Response response = this.getOkHttpClient().newCall(request.getRequest()).execute();
@@ -231,6 +261,11 @@ public class PostmanUtils {
     return httpClient;
   }
   
+  /**
+   * Deletes all cookies of PostmanUtils corresponding to the domain of a specific httpUrl.
+   * 
+   * @param arg0 HttpUrl with domain address.
+   */
   public void clearCookies(HttpUrl arg0) {
 	  this.getOkHttpClient().cookieJar().loadForRequest(arg0).clear();
   }
