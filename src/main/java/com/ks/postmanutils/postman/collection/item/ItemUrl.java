@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @Getter @ToString @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PostmanCollectionItemUrl {
+public final class ItemUrl {
   private String raw;
   private String protocol;
   @Builder.Default private List<String> host = new ArrayList<>();

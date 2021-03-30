@@ -8,6 +8,6 @@ import lombok.ToString;
 
 @Getter @ToString @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public final class PostmanCollectionItemCookie {
+public final class ItemCookie {
 
 }

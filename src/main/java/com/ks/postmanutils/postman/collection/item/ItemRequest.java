@@ -11,10 +11,10 @@ import lombok.ToString;
 
 @Getter @ToString @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PostmanCollectionItemRequest {
+public final class ItemRequest {
   private String method;
-  @Builder.Default private List<PostmanCollectionItemHeader> header = new ArrayList<>();
-  private PostmanCollectionItemBody body;
-  private PostmanCollectionItemUrl url;
+  @Builder.Default private List<ItemHeader> header = new ArrayList<>();
+  private ItemBody body;
+  private ItemUrl url;
   private String description;
 }

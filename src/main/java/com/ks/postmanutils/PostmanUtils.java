@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,14 +16,20 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ks.postmanutils.client.vo.OkHttpRequest;
 import com.ks.postmanutils.exception.PostmanUtilException;
-import com.ks.postmanutils.postman.collection.PostmanCollection;
-import com.ks.postmanutils.postman.collection.item.PostmanCollectionItem;
-import com.ks.postmanutils.postman.collection.item.PostmanCollectionItemBody;
-import com.ks.postmanutils.postman.collection.item.PostmanCollectionItemHeader;
-import com.ks.postmanutils.postman.collection.item.PostmanCollectionItemRequest;
-import com.ks.postmanutils.postman.environment.PostmanEnvironment;
-import com.ks.postmanutils.postman.environment.PostmanEnvironmentValue;
+import com.ks.postmanutils.postman.PostmanCollection;
+import com.ks.postmanutils.postman.PostmanEnvironment;
+import com.ks.postmanutils.postman.collection.CollectionItem;
+import com.ks.postmanutils.postman.collection.item.ItemBody;
+import com.ks.postmanutils.postman.collection.item.ItemHeader;
+import com.ks.postmanutils.postman.collection.item.ItemRequest;
+import com.ks.postmanutils.postman.environment.EnvironmentValue;
+
+import kotlin.Pair;
 import lombok.Getter;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -34,7 +41,7 @@ public class PostmanUtils {
   private final String postmanEnvironmentFilePath;
   
   private static ObjectMapper objectMapper;
-  private static OkHttpClient httpClient;
+  private OkHttpClient httpClient;
   private Map<String, String> environmentMap;
   
   @Getter private List<OkHttpRequest> requestList;
@@ -70,25 +77,25 @@ public class PostmanUtils {
   
   private List<OkHttpRequest> makeRequestFromCollection(PostmanCollection collection) {
     List<OkHttpRequest> retList = new ArrayList<>();
-    List<PostmanCollectionItem> itemList = collection.getItem();
+    List<CollectionItem> itemList = collection.getItem();
     if(itemList == null || itemList.isEmpty()) {
       return retList;
     }
-    for(PostmanCollectionItem item : itemList) {
+    for(CollectionItem item : itemList) {
       this.makeRequestFromItem(retList, item);
     }
     return retList;
   }
   
-  private void makeRequestFromItem(List<OkHttpRequest> retList, PostmanCollectionItem item) {
-    if((item.getItem() != null) && (!item.getItem().isEmpty())) {
-      List<PostmanCollectionItem> itemList = item.getItem();
-      for(PostmanCollectionItem subItem : itemList) {
+  private void makeRequestFromItem(List<OkHttpRequest> retList, CollectionItem item) {
+	List<CollectionItem> itemList = item.getItem();
+	if((itemList != null) && (!itemList.isEmpty())) {
+      for(CollectionItem subItem : itemList) {
         this.makeRequestFromItem(retList, subItem);
       }
     }
     
-    PostmanCollectionItemRequest postmanRequest = item.getRequest();
+    ItemRequest postmanRequest = item.getRequest();
     
     if(postmanRequest == null) {
       return;
@@ -100,11 +107,11 @@ public class PostmanUtils {
     reqBuilder = reqBuilder.url(environmentStringIncluder(postmanRequest.getUrl().getRaw()));
 
     // Headers & mediaType
-    List<PostmanCollectionItemHeader> headerList = postmanRequest.getHeader();
+    List<ItemHeader> headerList = postmanRequest.getHeader();
     MediaType mediaType = null;
     
-    for(PostmanCollectionItemHeader header : headerList) {
-      if(!header.getDisabled().equals(Boolean.TRUE)) {
+    for(ItemHeader header : headerList) {
+      if(!Boolean.TRUE.equals(header.getDisabled())) {
         String key = environmentStringIncluder(header.getKey());
         String value = environmentStringIncluder(header.getValue());
         if(key.equalsIgnoreCase("Content-Type")) {
@@ -119,7 +126,7 @@ public class PostmanUtils {
     }
     
     // Body & Method
-    PostmanCollectionItemBody body = item.getRequest().getBody();
+    ItemBody body = item.getRequest().getBody();
     if(body != null && body.getMode().equals("raw") && StringUtils.isNotBlank(body.getRaw())) {
       String rawBodyStr = environmentStringIncluder(body.getRaw());
       RequestBody reqBody = RequestBody.create(mediaType, rawBodyStr);
@@ -131,17 +138,31 @@ public class PostmanUtils {
     retList.add(OkHttpRequest.builder().request(reqBuilder.build()).build());
   }
   
-  public List<PostmanUtilException> sendAllRequest(List<OkHttpRequest> reqList) {
+  public List<PostmanUtilException> sendAllRequestIgnoreExcpetions(List<OkHttpRequest> reqList) {
     List<PostmanUtilException> exceptions = new ArrayList<>();
     reqList.forEach(req -> {
       try {
-        Response response = PostmanUtils.getOkHttpClient().newCall(req.getRequest()).execute();
-        req.setResponse(response);
-      } catch (IOException e) {
+    	sendRequest(req);
+      } catch (PostmanUtilException e) {
         exceptions.add(new PostmanUtilException(e));
       }
     });
     return exceptions;
+  }
+  
+  public void sendAllRequest(List<OkHttpRequest> reqList) throws PostmanUtilException {
+	for(OkHttpRequest req : reqList) {
+	  sendRequest(req);
+	}
+  }
+  
+  public void sendRequest(OkHttpRequest request) throws PostmanUtilException {
+	try {
+	  Response response = this.getOkHttpClient().newCall(request.getRequest()).execute();
+	  request.setResponse(response);
+	} catch (IOException e) {
+	  throw new PostmanUtilException("Error occurred during request.", e);
+	}
   }
   
   private String environmentStringIncluder(String original) {
@@ -149,7 +170,7 @@ public class PostmanUtils {
     
     for(Entry<String, String> entry : this.environmentMap.entrySet() ){
       String key = entry.getKey();
-      String matchKey = (new StringBuilder("{{")).append(key).append("}}").toString();
+      String matchKey = (new StringBuilder("\\{\\{")).append(key).append("\\}\\}").toString();
       ret = ret.replaceAll(matchKey, entry.getValue());
     }
     
@@ -157,8 +178,8 @@ public class PostmanUtils {
   }
   
   private void importEnvironmentToMap(PostmanEnvironment env) {
-    List<PostmanEnvironmentValue> values = env.getValues();
-    for(PostmanEnvironmentValue value : values) {
+    List<EnvironmentValue> values = env.getValues();
+    for(EnvironmentValue value : values) {
       if(Boolean.TRUE.equals(value.getEnabled())) {
         this.environmentMap.put(value.getKey(), value.getValue());
       } else {
@@ -167,11 +188,51 @@ public class PostmanUtils {
     }
   }
   
-  private static OkHttpClient getOkHttpClient() {
+  private OkHttpClient getOkHttpClient() {
     if(httpClient == null) {
-      httpClient = new OkHttpClient().newBuilder().build();
+      CookieJar cookieJar = new CookieJar() {
+    	Map<String, List<Cookie>> cookieMap = new HashMap<>();
+		
+    	@Override
+		public List<Cookie> loadForRequest(HttpUrl arg0) {
+    		List<Cookie> cookieList;
+    		if(cookieMap.containsKey(arg0.host())) {
+    			cookieList = cookieMap.get(arg0.host());
+    		} else {
+    			cookieList = new ArrayList<>();
+    			cookieMap.put(arg0.host(), cookieList);
+    		}
+            return cookieList;
+		}
+
+		@Override
+		public void saveFromResponse(HttpUrl arg0, List<Cookie> arg1) {
+			List<Cookie> cookieList;
+			if(cookieMap.containsKey(arg0.host())) {
+				cookieList = cookieMap.get(arg0.host());
+				arg1.forEach(newCookie -> {
+					List<Cookie> cookiesForRemove = new ArrayList<>();
+					cookieList.forEach(oldCookie -> {
+						if(newCookie.name().equals(oldCookie.name())) {
+							cookiesForRemove.add(oldCookie);
+						}
+					});
+					cookieList.removeAll(cookiesForRemove);
+				});
+				cookieList.addAll(arg1);
+    		} else {
+    			cookieMap.put(arg0.host(), arg1);
+    		}
+		}
+      };
+      httpClient = new OkHttpClient().newBuilder().cookieJar(cookieJar).build();
     }
+    
     return httpClient;
+  }
+  
+  public void clearCookies(HttpUrl arg0) {
+	  this.getOkHttpClient().cookieJar().loadForRequest(arg0).clear();
   }
   
   private static ObjectMapper getObjectMapper() {

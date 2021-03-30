@@ -9,9 +9,9 @@ import lombok.ToString;
 
 @Getter @ToString @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PostmanCollectionInfo {
-  private String _postman_id;
-  private String name;
-  private String description;
-  private String schema;
+public final class CollectionVariable {
+  private String id;
+  private String key;
+  private String value;
+  private String type;
 }

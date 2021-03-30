@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @Getter @ToString @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PostmanCollectionEvent {
+public final class CollectionEvent {
   private String listen;
   PostmanCollectionEventScript script;
 

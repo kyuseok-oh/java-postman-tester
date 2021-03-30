@@ -1,4 +1,4 @@
-package com.ks.postmanutils.postman.collection.item;
+package com.ks.postmanutils.postman.environment;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,8 @@ import lombok.ToString;
 
 @Getter @ToString @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PostmanCollectionItemBody {
-  private String mode;
-  private String raw;
+public final class EnvironmentValue {
+  private String key;
+  private String value;
+  private Boolean enabled;
 }
