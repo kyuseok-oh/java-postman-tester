@@ -1,9 +1,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.ks</groupId>
+  <groupId>com.github.kyuseok-oh</groupId>
   <artifactId>postman-utils</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
   <name>java-postman-tester</name>
+  <description>A library utility that makes it easy to write and test HTTP APIs in Java through collection and environment files created with Postman.</description>
+  <url>https://github.com/kyuseok-oh/java-postman-tester</url>
+  
+  <licenses>
+  	<license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+  	</license>
+  </licenses>
+  
+  <developers>
+  	<developer>
+  	  <name>kyuseok-oh</name>
+  	  <email>kyu-seok.oh@outlook.kr</email>
+  	</developer>
+  </developers>
+  
+  <scm>
+    <url>https://github.com/kyuseok-oh/java-postman-tester</url>
+  </scm>
+  
+  <distributionManagement>
+  	<snapshotRepository>
+  	  <id>ossrh</id>
+  	  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  	</snapshotRepository>
+  	<repository>
+  	  <id>ossrh</id>
+  	  <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+  	</repository>
+  </distributionManagement>
+
+  <properties>
+  	<java.version>1.8</java.version>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   
   <dependencies>
   	<dependency>
