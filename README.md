@@ -17,21 +17,11 @@
 The code below is an example of setting up a dependency using maven.
 
 ```xml
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.ks</groupId>
-  <artifactId>postman</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  <dependencies>
-    <dependency>
-      <groupId>com.ks</groupId>
-      <artifactId>postman-utils</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
-
-</project>
+<dependency>
+  <groupId>io.github.kyuseok-oh</groupId>
+  <artifactId>postman-utils</artifactId>
+  <version>1.0.4</version>
+</dependency>
 ```
 
 The example code below is a code that calls all APIs within the Postman Collection and Environment in three different ways.
