@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.kyuseok-oh</groupId>
   <artifactId>postman-utils</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.4</version>
   <packaging>jar</packaging>
   <name>java-postman-tester</name>
   <description>A library utility that makes it easy to write and test HTTP APIs in Java through collection and environment files created with Postman.</description>
@@ -96,6 +96,22 @@
           </execution>
         </executions>
       </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>

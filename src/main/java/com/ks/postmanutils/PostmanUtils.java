@@ -149,7 +149,7 @@ public class PostmanUtils {
   }
   
   /**
-   * A method that sequentially sends all requests in the request list.</br>
+   * A method that sequentially sends all requests in the request list.<br>
    * Exceptions that occurred in the middle are added to the list and returned.
    * 
    * @param reqList A list of requests made when creating the PostmanUtils class.
@@ -168,7 +168,7 @@ public class PostmanUtils {
   }
   
   /**
-   * A method that sequentially sends all requests in the request list.</br>
+   * A method that sequentially sends all requests in the request list.<br>
    * If an exception occurs during the request, it stops and throws an exception.
    * 
    * @param reqList A list of requests made when creating the PostmanUtils class.
